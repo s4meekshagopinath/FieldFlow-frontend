@@ -34,26 +34,18 @@ async function getDashboard(req, res) {
   try {
     const technicianId = req.user.id;
 
-    const result = await Booking.findByTechnician ? await Booking.findByTechnician(technicianId) : await Booking.findAll();
-
-    const myBookings = result.rows ? result.rows.filter((job) => job.technician_id === technicianId || job.assigned_technician_id === technicianId) : [];
+    const result = await Booking.findByTechnician(technicianId);
+    const myBookings = result.rows;
 
     const today = new Date().toDateString();
 
     const dashboard = {
-      assignedJobs: myBookings.length,
-
-      inProgress: myBookings.filter(
-        (job) => job.status === "In Progress" || job.status === "in_progress"
-      ).length,
-
-      completed: myBookings.filter(
-        (job) => job.status === "Completed" || job.status === "completed"
-      ).length,
-
-      todayJobs: myBookings.filter((job) => {
-        if (!job.scheduled_at) return false;
-        return new Date(job.scheduled_at).toDateString() === today;
+      assignedJobs: myBookings.filter((b) => b.status === "Assigned").length,
+      inProgress: myBookings.filter((b) => b.status === "In Progress" || b.status === "in_progress").length,
+      completed: myBookings.filter((b) => b.status === "Completed" || b.status === "completed").length,
+      todayJobs: myBookings.filter((b) => {
+        if (!b.booking_date) return false;
+        return new Date(b.booking_date).toDateString() === today;
       }).length,
     };
 

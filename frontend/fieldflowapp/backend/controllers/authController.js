@@ -71,23 +71,24 @@ async function login(req, res) {
       [email]
     );
 
-    if (result.rows.length === 0) {
+    if (!result.rows.length)
       return res.status(401).json({ error: "Invalid email or password." });
-    }
 
     const user = result.rows[0];
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Email entered:", email);
+    console.log("Password entered:", password);
+    console.log("User found:", user.email);
+    console.log("Stored hash:", user.password);
 
-    if (!isMatch) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match:", isMatch);
+
+    if (!isMatch)
       return res.status(401).json({ error: "Invalid email or password." });
-    }
 
     const token = jwt.sign(
-      {
-        id: user.id,
-        role: user.role,
-      },
+      { id: user.id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
