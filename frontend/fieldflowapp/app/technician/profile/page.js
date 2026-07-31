@@ -1,177 +1,63 @@
 "use client";
-
-import "@/app/customer/profile/profile.css";
+import { User, Mail, Phone, MapPin, Wrench, Shield, Star } from "lucide-react";
 import useTechnicianProfile from "@/hooks/useTechnicianProfile";
 
-export default function TechnicianProfilePage() {
-  const { profile, loading } = useTechnicianProfile();
-
-  const user = profile || {};
-
-  const memberSince = user.created_at
-    ? new Date(user.created_at).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : "—";
+export default function ProfilePage() {
+  const { profile, loading, error } = useTechnicianProfile();
 
   if (loading) return <div className="p-8 text-gray-500">Loading profile...</div>;
+  if (error) return <div className="p-8 text-red-500">Failed to load profile: {error}</div>;
+
+  const initial = profile?.name?.charAt(0).toUpperCase() ?? "?";
 
   return (
-    <main className="profile-page">
-      {/* Header */}
-      <section className="profile-header">
-        <div className="profile-overlay">
-          <div className="profile-header-content">
-            <span className="profile-tag">Technician Account</span>
-            <h1>Technician Profile</h1>
-            <p>Manage your skills, working area, and availability preferences.</p>
-            <div className="breadcrumb">
-              Home <span>/</span> Profile
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">My Profile</h1>
 
-      {/* Personal Info */}
-      <section className="personal-info section">
-        <div className="profile-left">
-          <div className="profile-card">
-            <div className="profile-image-placeholder text-4xl font-bold bg-orange-500 text-white rounded-full w-28 h-28 flex items-center justify-center mx-auto mb-4 border-4 border-orange-500">
-              {user.name?.charAt(0).toUpperCase() || "T"}
-            </div>
-            <h2>{user.name}</h2>
-            <span className="role-badge">Technician</span>
-            <button type="button" className="edit-photo-btn mt-3">
-              Change Photo
-            </button>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Card */}
+        <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+          <div className="w-24 h-24 rounded-full bg-orange-500 text-white flex items-center justify-center text-4xl font-bold mx-auto">
+            {initial}
+          </div>
+          <h2 className="text-2xl font-semibold mt-4">{profile?.name}</h2>
+          <p className="text-gray-500">{profile?.category ?? "—"}</p>
+          <div className="flex justify-center items-center gap-1 mt-4 text-yellow-500">
+            <Star size={18} fill="currentColor" />
+            <span className="font-semibold">—</span>
           </div>
         </div>
 
-        <div className="profile-right">
-          <h2>Technician Information</h2>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Full Name</label>
-                <input type="text" value={user.name || ""} readOnly />
-              </div>
-              <div className="form-group">
-                <label>Email</label>
-                <input type="email" value={user.email || ""} readOnly />
-              </div>
-            </div>
+        {/* Right Card */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6">
+          <h3 className="text-xl font-semibold mb-6">Personal Information</h3>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Phone Number</label>
-                <input type="text" value={user.phone || ""} readOnly />
-              </div>
-              <div className="form-group">
-                <label>Service Category</label>
-                <input type="text" value={user.category || ""} readOnly />
-              </div>
-            </div>
+          <div className="grid md:grid-cols-2 gap-5">
+            <Info icon={<User size={18} />} label="Name" value={profile?.name} />
+            <Info icon={<Mail size={18} />} label="Email" value={profile?.email} />
+            <Info icon={<Phone size={18} />} label="Phone" value={profile?.phone} />
+            <Info icon={<MapPin size={18} />} label="Working Area" value={profile?.workingArea} />
+            <Info icon={<Wrench size={18} />} label="Specialization" value={profile?.category} />
+            <Info icon={<Shield size={18} />} label="Experience" value={profile?.experience ? `${profile.experience} Years` : "—"} />
+          </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Years of Experience</label>
-                <input type="text" value={user.experience ? `${user.experience} Years` : "—"} readOnly />
-              </div>
-              <div className="form-group">
-                <label>Working Area / City</label>
-                <input type="text" value={user.workingArea || ""} readOnly />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Available Today</label>
-                <input type="text" value={user.availableToday ? "Available" : "Not Available"} readOnly />
-              </div>
-            </div>
-          </form>
+          <button className="mt-8 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl transition">
+            Edit Profile
+          </button>
         </div>
-      </section>
-
-      {/* Account Info */}
-      <div className="section">
-        <section className="account-info">
-          <h2>Account Information</h2>
-          <div className="account-grid">
-            <div className="info-card">
-              <h4>User ID</h4>
-              <p>TCH{String(user.id || "").padStart(3, "0")}</p>
-            </div>
-            <div className="info-card">
-              <h4>Role</h4>
-              <p>Technician</p>
-            </div>
-            <div className="info-card">
-              <h4>Duty Status</h4>
-              <p>{user.availableToday ? "Available Today" : "Off Duty"}</p>
-            </div>
-            <div className="info-card">
-              <h4>Member Since</h4>
-              <p>{memberSince}</p>
-            </div>
-          </div>
-        </section>
       </div>
+    </div>
+  );
+}
 
-      {/* Preferences */}
-      <div className="section">
-        <section className="preferences">
-          <h2>Preferences</h2>
-          <div className="preference-grid">
-            <div className="form-group">
-              <label>Language</label>
-              <select defaultValue="English">
-                <option>English</option>
-                <option>Hindi</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Notifications</label>
-              <select defaultValue="Enabled">
-                <option>Enabled</option>
-                <option>Disabled</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Theme</label>
-              <select defaultValue="Light">
-                <option>Light</option>
-                <option>Dark</option>
-              </select>
-            </div>
-          </div>
-        </section>
+function Info({ icon, label, value }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="text-orange-500 mt-1">{icon}</div>
+      <div>
+        <p className="text-sm text-gray-500">{label}</p>
+        <p className="font-medium text-gray-800">{value ?? "—"}</p>
       </div>
-
-      {/* Security */}
-      <div className="section">
-        <section className="security">
-          <h2>Security</h2>
-          <div className="security-box">
-            <div className="form-group">
-              <label>Password</label>
-              <input type="password" value="************" readOnly />
-            </div>
-            <button type="button" className="change-password-btn">
-              Change Password
-            </button>
-          </div>
-        </section>
-      </div>
-
-      {/* Action Buttons */}
-      <section className="action-buttons">
-        <button type="button" className="edit-btn">Edit Profile</button>
-        <button type="button" className="save-btn">Save Changes</button>
-        <button type="button" className="cancel-btn">Cancel</button>
-      </section>
-    </main>
+    </div>
   );
 }

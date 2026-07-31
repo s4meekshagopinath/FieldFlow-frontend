@@ -9,8 +9,6 @@ import BookingSummary from "@/components/dispatcher/manualBooking/BookingSummary
 import ActionButtons from "@/components/dispatcher/manualBooking/ActionButtons";
 import DashboardLayout from "@/components/dispatcher/DashboardLayout";
 
-import { API_BASE_URL } from "@/lib/apiConfig";
-
 export default function ManualBookingPage() {
   const initialState = {
     customer: "",
@@ -19,6 +17,7 @@ export default function ManualBookingPage() {
     address: "",
     city: "",
     pincode: "",
+
     service: "",
     priority: "",
     date: "",
@@ -31,6 +30,7 @@ export default function ManualBookingPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -55,42 +55,42 @@ export default function ManualBookingPage() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/dispatcher/manual-booking`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          customer_name: formData.customer,
-          phone: formData.phone,
-          email: formData.email,
-          address: formData.address,
-          city: formData.city,
-          pincode: formData.pincode,
+      const response = await fetch(
+        "http://localhost:5000/api/dispatcher/manual-booking",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            customer_name: formData.customer,
+            phone: formData.phone,
+            email: formData.email,
+            address: formData.address,
+            city: formData.city,
+            pincode: formData.pincode,
 
-          service_name: formData.service,
-          priority: formData.priority || "Normal",
+            service_name: formData.service,
+            priority: formData.priority || "Normal",
 
-          booking_date: formData.date,
-          booking_time: formData.time,
+            booking_date: formData.date,
+            booking_time: formData.time,
 
-          estimated_price: Number(formData.price) || 0,
-          description: formData.description,
-        }),
-      });
+            estimated_price: Number(formData.price) || 0,
+            description: formData.description,
+          }),
+        }
+      );
+
+      const result = await response.json();
 
       if (!response.ok) {
-        let msg = "Failed to create booking.";
-        try {
-          const errData = await response.json();
-          msg = errData.message || errData.error || msg;
-        } catch (_) {}
-        alert(msg);
+        alert(result.message || "Failed to create booking.");
         return;
       }
 
-      const result = await response.json();
       alert("Booking Created Successfully!");
+
       handleReset();
     } catch (error) {
       console.error("Manual Booking Error:", error);
