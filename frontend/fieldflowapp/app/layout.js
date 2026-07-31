@@ -1,9 +1,6 @@
-"use client";
-import { usePathname } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footers from "@/components/layout/Footer";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,20 +12,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export default function RootLayout({ children }) {
-  const pathname = usePathname();
-  const hideLayout =
-    pathname?.startsWith("/admin") ||
-    pathname?.startsWith("/customer") ||
-    pathname?.startsWith("/technician") ||
-    pathname?.startsWith("/dispatcher");
+export const metadata = {
+  title: "FieldFlow",
+  description: "Home repair and field service booking platform",
+};
 
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col">
-        {!hideLayout && <Navbar />}
-        <main className="flex-grow">{children}</main>
-        {!hideLayout && <Footers />}
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-[#F4F6FB]">
+        <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>
   );
