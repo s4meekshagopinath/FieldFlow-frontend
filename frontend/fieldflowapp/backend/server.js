@@ -36,6 +36,15 @@ app.post("/test-body", (req, res) => {
   });
 });
 
+// Database Connection Test
+pool.query("SELECT NOW()")
+  .then((result) => {
+    console.log("Connected to Supabase PostgreSQL:", result.rows[0].now);
+  })
+  .catch((err) => {
+    console.error("Database Connection Failed:", err.message);
+  });
+
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
