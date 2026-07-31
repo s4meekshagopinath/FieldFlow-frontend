@@ -13,11 +13,8 @@ const technicianRoutes = require("./routes/technicianRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
-<<<<<<< HEAD
-=======
 const contactRoutes = require("./routes/contactRoutes");
 const dispatcherRoutes = require("./routes/dispatcherRoutes");
->>>>>>> origin/dev
 const serviceRoutes = require("./routes/serviceRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 
@@ -28,6 +25,7 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
+// Test request body
 app.post("/test-body", (req, res) => {
   console.log("Headers:", req.headers["content-type"]);
   console.log("Body:", req.body);
@@ -38,15 +36,6 @@ app.post("/test-body", (req, res) => {
   });
 });
 
-// Database Connection Test
-pool.query("SELECT NOW()")
-  .then((result) => {
-    console.log("✅ Connected to Supabase PostgreSQL:", result.rows[0].now);
-  })
-  .catch((err) => {
-    console.error("❌ Database Connection Failed:", err.message);
-  });
-
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
@@ -55,37 +44,16 @@ app.use("/api/technicians", technicianRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/settings", settingsRoutes);
-<<<<<<< HEAD
-=======
 app.use("/api/contact", contactRoutes);
 app.use("/api/dispatcher", dispatcherRoutes);
->>>>>>> origin/dev
 app.use("/api/services", serviceRoutes);
 app.use("/api/notifications", notificationRoutes);
 
 // Root Route
 app.get("/", (req, res) => {
-  res.send("🚀 FieldFlow Backend Running");
+  res.send("FieldFlow Backend Running");
 });
 
-<<<<<<< HEAD
-// Test database connection
-pool.query("SELECT NOW()")
-  .then((result) => {
-    console.log("Connected to Supabase PostgreSQL");
-    console.log("Database Time:", result.rows[0].now);
-  })
-  .catch((err) => {
-    console.error("Database Connection Failed:");
-    console.error(err.message);
-  });
-
-// Start server
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-=======
 // Database Test Route
 app.get("/api/test-db", async (req, res) => {
   try {
@@ -113,6 +81,5 @@ app.use(errorMiddleware);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
->>>>>>> origin/dev
+  console.log(`Server running on port ${PORT}`);
 });
