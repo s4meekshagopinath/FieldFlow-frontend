@@ -71,8 +71,9 @@ async function login(req, res) {
       [email]
     );
 
-    if (!result.rows.length)
+    if (!result.rows.length) {
       return res.status(401).json({ error: "Invalid email or password." });
+    }
 
     const user = result.rows[0];
 
@@ -84,8 +85,9 @@ async function login(req, res) {
     const isMatch = await bcrypt.compare(password, user.password);
     console.log("Password match:", isMatch);
 
-    if (!isMatch)
+    if (!isMatch) {
       return res.status(401).json({ error: "Invalid email or password." });
+    }
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
@@ -100,7 +102,18 @@ async function login(req, res) {
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
+        address: user.address,
+        city: user.city,
+        pincode: user.pincode,
+        category: user.category,
+        experience: user.experience,
+        working_area: user.working_area,
+        available_today: user.available_today,
+        employee_id: user.employee_id,
+        office_branch: user.office_branch,
+        created_at: user.created_at,
       },
     });
 

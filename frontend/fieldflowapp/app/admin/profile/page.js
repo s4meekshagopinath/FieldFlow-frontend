@@ -1,12 +1,56 @@
 "use client";
 
 import "@/app/customer/profile/profile.css";
-import useTechnicianProfile from "@/hooks/useTechnicianProfile";
+import { useEffect, useState } from "react";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
-export default function TechnicianProfilePage() {
-  const { profile, loading } = useTechnicianProfile();
+export default function AdminProfilePage() {
+  const [user, setUser] = useState({
+    name: "System Administrator",
+    email: "admin@fieldflow.in",
+    phone: "9900011223",
+    role: "admin",
+    created_at: new Date().toISOString(),
+  });
+  const [loading, setLoading] = useState(true);
 
-  const user = profile || {};
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      if (stored.name || stored.email) {
+        setUser((prev) => ({ ...prev, ...stored }));
+      }
+    } catch {}
+
+    async function fetchUser() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/settings/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          if (response.ok && data.data) {
+            setUser((prev) => ({ ...prev, ...data.data }));
+            localStorage.setItem("user", JSON.stringify(data.data));
+          }
+        }
+      } catch {
+        // Fallback silently to stored
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUser();
+  }, []);
 
   const memberSince = user.created_at
     ? new Date(user.created_at).toLocaleDateString("en-IN", {
@@ -14,9 +58,7 @@ export default function TechnicianProfilePage() {
         month: "long",
         year: "numeric",
       })
-    : "—";
-
-  if (loading) return <div className="p-8 text-gray-500">Loading profile...</div>;
+    : "January 2026";
 
   return (
     <main className="profile-page">
@@ -24,9 +66,9 @@ export default function TechnicianProfilePage() {
       <section className="profile-header">
         <div className="profile-overlay">
           <div className="profile-header-content">
-            <span className="profile-tag">Technician Account</span>
-            <h1>Technician Profile</h1>
-            <p>Manage your skills, working area, and availability preferences.</p>
+            <span className="profile-tag">Admin Account</span>
+            <h1>Admin Profile</h1>
+            <p>Manage your system administrator credentials and platform permissions.</p>
             <div className="breadcrumb">
               Home <span>/</span> Profile
             </div>
@@ -39,10 +81,10 @@ export default function TechnicianProfilePage() {
         <div className="profile-left">
           <div className="profile-card">
             <div className="profile-image-placeholder text-4xl font-bold bg-orange-500 text-white rounded-full w-28 h-28 flex items-center justify-center mx-auto mb-4 border-4 border-orange-500">
-              {user.name?.charAt(0).toUpperCase() || "T"}
+              {user.name?.charAt(0).toUpperCase() || "A"}
             </div>
             <h2>{user.name}</h2>
-            <span className="role-badge">Technician</span>
+            <span className="role-badge">Super Admin</span>
             <button type="button" className="edit-photo-btn mt-3">
               Change Photo
             </button>
@@ -50,7 +92,7 @@ export default function TechnicianProfilePage() {
         </div>
 
         <div className="profile-right">
-          <h2>Technician Information</h2>
+          <h2>Administrator Information</h2>
           <form onSubmit={(e) => e.preventDefault()}>
             <div className="form-row">
               <div className="form-group">
@@ -69,26 +111,15 @@ export default function TechnicianProfilePage() {
                 <input type="text" value={user.phone || ""} readOnly />
               </div>
               <div className="form-group">
-                <label>Service Category</label>
-                <input type="text" value={user.category || ""} readOnly />
+                <label>Admin Privilege</label>
+                <input type="text" value="Super Administrator" readOnly />
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label>Years of Experience</label>
-                <input type="text" value={user.experience ? `${user.experience} Years` : "—"} readOnly />
-              </div>
-              <div className="form-group">
-                <label>Working Area / City</label>
-                <input type="text" value={user.workingArea || ""} readOnly />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label>Available Today</label>
-                <input type="text" value={user.availableToday ? "Available" : "Not Available"} readOnly />
+                <label>Platform Access</label>
+                <input type="text" value="Full Platform Access" readOnly />
               </div>
             </div>
           </form>
@@ -101,16 +132,16 @@ export default function TechnicianProfilePage() {
           <h2>Account Information</h2>
           <div className="account-grid">
             <div className="info-card">
-              <h4>User ID</h4>
-              <p>TCH{String(user.id || "").padStart(3, "0")}</p>
+              <h4>Admin ID</h4>
+              <p>ADM{String(user.id || 1).padStart(3, "0")}</p>
             </div>
             <div className="info-card">
               <h4>Role</h4>
-              <p>Technician</p>
+              <p>Administrator</p>
             </div>
             <div className="info-card">
-              <h4>Duty Status</h4>
-              <p>{user.availableToday ? "Available Today" : "Off Duty"}</p>
+              <h4>Platform Scope</h4>
+              <p>Global System</p>
             </div>
             <div className="info-card">
               <h4>Member Since</h4>
