@@ -61,12 +61,22 @@ async function getDashboard(req, res) {
     const today = new Date().toDateString();
 
     const dashboard = {
-      assignedJobs: myBookings.filter((b) => b.status === "Assigned").length,
-      inProgress: myBookings.filter((b) => b.status === "In Progress" || b.status === "in_progress").length,
-      completed: myBookings.filter((b) => b.status === "Completed" || b.status === "completed").length,
+      assignedJobs: myBookings.filter(
+        (b) => b.status === "assigned" || b.status === "Assigned"
+      ).length,
+
+      inProgress: myBookings.filter(
+        (b) => b.status === "in_progress" || b.status === "In Progress"
+      ).length,
+
+      completed: myBookings.filter(
+        (b) => b.status === "completed" || b.status === "Completed"
+      ).length,
+
       todayJobs: myBookings.filter((b) => {
-        if (!b.booking_date) return false;
-        return new Date(b.booking_date).toDateString() === today;
+        const dateVal = b.scheduled_at || b.booking_date;
+        if (!dateVal) return false;
+        return new Date(dateVal).toDateString() === today;
       }).length,
     };
 
@@ -111,7 +121,9 @@ async function updateJobStatus(req, res) {
     const updated = await Booking.updateBookingStatus(req.params.id, status);
 
     try {
-      await JobTracking.upsert(req.params.id, req.user.id, status);
+      if (JobTracking && JobTracking.upsert) {
+        await JobTracking.upsert(req.params.id, req.user.id, status);
+      }
     } catch (_) {
       // job_tracking update is best-effort
     }
@@ -133,4 +145,14 @@ async function updateAvailability(req, res) {
   }
 }
 
-module.exports = { getAllTechnicians, getTechnicianById, toggleAvailability, getDashboard, getMyJobs, getJobById, updateJobStatus, updateAvailability };
+module.exports = {
+  getMyProfile,
+  getAllTechnicians,
+  getTechnicianById,
+  toggleAvailability,
+  getDashboard,
+  getMyJobs,
+  getJobById,
+  updateJobStatus,
+  updateAvailability,
+};

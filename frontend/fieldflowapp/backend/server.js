@@ -22,10 +22,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
-// Catch body parse errors (Express 5 throws on malformed JSON)
+// Catch body parse errors
 app.use((err, req, res, next) => {
-  if (err.type === "entity.parse.failed")
+  if (err && err.type === "entity.parse.failed") {
     return res.status(400).json({ error: "Invalid JSON in request body." });
+  }
   next(err);
 });
 
@@ -50,18 +51,24 @@ app.get("/", (req, res) => {
   res.send("FieldFlow Backend Running");
 });
 
-// Test database connection
-pool.query("SELECT NOW()")
-  .then((result) => {
-    console.log("Connected to Supabase PostgreSQL");
-    console.log("Database Time:", result.rows[0].now);
-  })
-  .catch((err) => {
-    console.error("Database Connection Failed:");
-    console.error(err.message);
-  });
+// Database Test Route
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json({
+      success: true,
+      message: "Database Connected Successfully",
+      time: result.rows[0].now,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Database Connection Failed",
+    });
+  }
+});
 
-// Start server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
