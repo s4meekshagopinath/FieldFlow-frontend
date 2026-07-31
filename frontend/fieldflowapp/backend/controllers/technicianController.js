@@ -1,6 +1,7 @@
 const Technician = require("../models/Technician");
 const Booking = require("../models/Booking");
 const JobTracking = require("../models/JobTracking");
+const pool = require("../config/db");
 
 async function getMyProfile(req, res) {
   try {
@@ -55,22 +56,48 @@ async function getDashboard(req, res) {
   try {
     const technicianId = req.user.id;
 
-    const result = await Booking.findByTechnician(technicianId);
-    const myBookings = result.rows;
+    // Reuse existing model — joins dispatcher_assignments → bookings
+    const { rows: allJobs } = await Booking.findByTechnician(technicianId);
 
-    const today = new Date().toDateString();
+    // Counts from bookings.status
+    const assignedJobs = allJobs.filter((b) => b.status === "Assigned").length;
+    const completed    = allJobs.filter((b) => b.status === "Completed").length;
 
-    const dashboard = {
-      assignedJobs: myBookings.filter((b) => b.status === "Assigned").length,
-      inProgress: myBookings.filter((b) => b.status === "In Progress" || b.status === "in_progress").length,
-      completed: myBookings.filter((b) => b.status === "Completed" || b.status === "completed").length,
-      todayJobs: myBookings.filter((b) => {
-        if (!b.booking_date) return false;
-        return new Date(b.booking_date).toDateString() === today;
-      }).length,
-    };
+    // In-progress count from job_tracking.current_status (source of truth)
+    const { rows: inProgressRows } = await pool.query(
+      `SELECT COUNT(*) FROM job_tracking
+       WHERE technician_id = $1 AND current_status = 'In Progress'`,
+      [technicianId]
+    );
+    const inProgress = parseInt(inProgressRows[0].count, 10);
 
-    res.json(dashboard);
+    // Next upcoming job — nearest future booking_date assigned to this technician
+    const { rows: nextRows } = await pool.query(
+      `SELECT
+         b.id           AS "bookingId",
+         s.name         AS service,
+         u.name         AS customer,
+         b.address      AS location,
+         b.booking_date AS "scheduledDate",
+         b.booking_time AS "scheduledTime"
+       FROM dispatcher_assignments da
+       JOIN bookings b  ON b.id  = da.booking_id
+       JOIN services s  ON s.id  = b.service_id
+       JOIN users u     ON u.id  = b.user_id
+       WHERE da.technician_id = $1
+         AND b.booking_date >= CURRENT_DATE
+         AND b.status NOT IN ('Completed', 'Cancelled')
+       ORDER BY b.booking_date ASC, b.booking_time ASC
+       LIMIT 1`,
+      [technicianId]
+    );
+
+    res.json({
+      assignedJobs,
+      inProgress,
+      completed,
+      nextJob: nextRows[0] ?? null,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -133,4 +160,4 @@ async function updateAvailability(req, res) {
   }
 }
 
-module.exports = { getAllTechnicians, getTechnicianById, toggleAvailability, getDashboard, getMyJobs, getJobById, updateJobStatus, updateAvailability };
+module.exports = { getMyProfile, getAllTechnicians, getTechnicianById, toggleAvailability, getDashboard, getMyJobs, getJobById, updateJobStatus, updateAvailability };

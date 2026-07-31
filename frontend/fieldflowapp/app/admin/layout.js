@@ -62,7 +62,7 @@ export default function AdminLayout({ children }) {
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    router.replace("/register");
+    router.replace("/login");
   }
 
   const unreadCount = notifs.filter((n) => n.unread).length;

@@ -18,10 +18,10 @@ export default function TechnicianLayout({ children }) {
       if (stored) {
         setUser(JSON.parse(stored));
       } else {
-        setUser({ name: "Technician User", email: "tech@fieldflow.com", role: "technician" });
+        router.replace("/login");
       }
     } catch {
-      setUser({ name: "Technician User", email: "tech@fieldflow.com", role: "technician" });
+      router.replace("/login");
     }
   }, []);
 
