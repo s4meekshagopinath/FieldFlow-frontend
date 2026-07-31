@@ -13,8 +13,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import { API_BASE_URL } from "@/lib/apiConfig";
-
 export default function EmergencyQueuePage() {
 
   const [emergencies, setEmergencies] = useState([]);
@@ -32,34 +30,55 @@ export default function EmergencyQueuePage() {
   }, []);
 
   const loadEmergencyJobs = async () => {
+
     try {
-      const response = await fetch(`${API_BASE_URL}/dispatcher/emergency-jobs`);
+
+      const response = await fetch(
+        "http://localhost:5000/api/dispatcher/emergency-jobs"
+      );
+
       if (!response.ok) {
-        console.warn("Could not fetch emergency jobs from server, using fallback");
-        setLoading(false);
-        return;
+        throw new Error("Failed to fetch emergency jobs");
       }
 
       const data = await response.json();
-      const list = Array.isArray(data) ? data : [];
 
-      const formatted = list.map((job) => ({
+      const formatted = data.map((job) => ({
+
         id: job.id,
-        customer: job.customer_name || "Customer",
-        service: job.service_name || "Emergency Service",
-        location: job.address || "Location N/A",
-        phone: job.phone || "N/A",
+
+        customer: job.customer_name,
+
+        phone: job.phone,
+
+        service: job.service_name,
+
+        address: job.address,
+
+        waiting: job.waiting_time || "New",
+
+        technician:
+          job.technician_name || "Not Assigned",
+
         priority: job.priority || "High",
-        status: job.emergency_status || job.status || "Pending",
-        time: job.created_at ? new Date(job.created_at).toLocaleTimeString() : "Just now",
+
       }));
 
       setEmergencies(formatted);
+
     } catch (error) {
-      console.error("Emergency queue load error:", error);
+
+      console.error(
+        "Emergency Queue Error:",
+        error
+      );
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   const filtered = emergencies.filter((item) =>

@@ -13,8 +13,6 @@ import {
   Wrench,
 } from "lucide-react";
 
-import { API_BASE_URL } from "@/lib/apiConfig";
-
 export default function DispatcherBoardPage() {
 
   const [pendingJobs, setPendingJobs] = useState([]);
@@ -33,27 +31,39 @@ export default function DispatcherBoardPage() {
   }, []);
 
   const loadData = async () => {
+
     try {
+
       const [jobsRes, techRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/dispatcher/pending-bookings`),
-        fetch(`${API_BASE_URL}/dispatcher/technicians`),
+
+        fetch(
+          "http://localhost:5000/api/dispatcher/pending-bookings"
+        ),
+
+        fetch(
+          "http://localhost:5000/api/dispatcher/technicians"
+        ),
+
       ]);
 
-      const jobsData = jobsRes.ok ? await jobsRes.json() : [];
-      const techsData = techRes.ok ? await techRes.json() : [];
+      if (!jobsRes.ok || !techRes.ok) {
+        throw new Error("Failed to fetch dispatcher data.");
+      }
 
-      const jobsList = Array.isArray(jobsData) ? jobsData : [];
-      const techsList = Array.isArray(techsData) ? techsData : [];
+      const jobs = await jobsRes.json();
+      const techs = await techRes.json();
 
-      const formattedJobs = jobsList.map((job) => ({
+      const formattedJobs = jobs.map((job) => ({
         id: job.id,
+        customer: job.customer_name,
+        service: job.service_name,
         location: job.address,
         priority: job.priority || "Normal",
         waiting: "New",
       }));
 
       setPendingJobs(formattedJobs);
-      setTechnicians(techsList);
+      setTechnicians(techs);
 
     } catch (error) {
 

@@ -1,15 +1,5 @@
 const router = require("express").Router();
-const {
-  getAllTechnicians,
-  getTechnicianById,
-  toggleAvailability,
-  getDashboard,
-  getMyJobs,
-  getJobById,
-  updateJobStatus,
-  updateAvailability,
-  getMyProfile
-} = require("../controllers/technicianController");
+const { getAllTechnicians, getTechnicianById, toggleAvailability, getDashboard, getMyJobs, getJobById, updateJobStatus, updateAvailability, getMyProfile } = require("../controllers/technicianController");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 router.get("/", protect, adminOnly, getAllTechnicians);
